@@ -1,0 +1,61 @@
+.ui-autocomplete
+{
+    border-top:5px solid transparent!important;
+    background-color: #dededf;
+    width: 350px;
+     border: 2px solid #3b8dbd;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+     border-radius: 15px;
+     box-shadow: 8px 8px 3px #888888;
+}
+.ui-autocomplete a{
+font-weight: bold;
+padding-left: 15px;
+}
+
+#invite_faculty{
+display:none;
+}
+#invite_students{
+display:none;
+}
+#inviteUserLink{
+display:none;
+
+}
+#invite-message{
+font-size: 12pt; 
+background-color: #ffff99;
+color: #3b8dbd;
+font-weight: bold;
+}
+/* roster page layout */
+ol#pdli {
+
+   margin: 2em; 
+}
+
+p {color: #000;}
+.roster_message{
+font-size: 12pt;
+color: #3b8dbd;
+}
+#joinLink{
+font-size: 15px;
+font-weight: bold;
+color: #000;
+background-color:#f8eb97;	
+}
+#rosterListDelete{display:none;}
+.roster_faculty_list_avatar{
+padding-right: 20px;
+
+}
+.roster_faculty_list_avatar img{
+vertical-align:middle;
+padding-right: 20px;
+}
+.qiSurveyListOnRoster{
+display:none;
+}

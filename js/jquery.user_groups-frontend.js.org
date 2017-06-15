@@ -1,0 +1,218 @@
+/*
+	jquery.user_groups-frontend.js
+	
+	License: GNU General Public License v3.0
+	License URI: http://www.gnu.org/licenses/gpl-3.0.html
+	
+*/
+jQuery(document).ready(function($) {
+var current_page = $(location).attr('href');
+var baseURL = window.location.protocol+"//"+window.location.host;
+var lookupURL=baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+	//see if there is an id passed in, if so, load all the screen values and show all three divs 
+	   var qs = [], hash;
+	   var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+		for(var i = 0; i < hashes.length; i++){   
+			hash = hashes[i].split('=');
+			qs.push(hash[0]);
+			qs[hash[0]] = hash[1];
+		}
+		var id = qs["rosterid"]
+		var action = qs["action"];
+		var scrollto=qs["scrollto"];
+		if (scrollto == 'invite_students'){
+		document.getElementById('invite_students').scrollIntoView();
+		}
+		var baseURL = window.location.protocol+"//"+window.location.host;
+		var lookupURL=baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+//don't go any further if the editroster parameter was not sent in through the qs
+  if (action =='editroster' && id > 0){
+	   var letters = ['a','b','c','d','e','f','g','h','i','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',0,1,2,3,4,5,6,7,8,9];
+	   var randomstring = '';
+			   for(var i=0; i < 5; i++){
+				 var rlet = Math.floor(Math.random()*letters.length);
+				 randomstring += letters[rlet];
+				}
+	   var joinlink = baseURL+'/joinroster/?jn='+ id + '_' + randomstring;
+	    //go ahead and load the form with the already saved data and show all three sections of the form.
+			$.post(lookupURL, {'action':'get_group_info','id':id}, function(returndata){
+			var obj =jQuery.parseJSON( returndata );
+			$(".groupid").val(id);
+			$(".groupname").val(obj.groupname);
+			$(".groupsemester").val(obj.groupsemester);
+			$(".groupschool").val(obj.groupschool);
+			$(".groupdescription").val(obj.groupdescription);
+			//this is set to 1 so that we can tell if we are editing when the form gets submitted
+			$(".editroster").val("1");
+			$(".rostergroupid").val(id);
+			});		
+	        //show all the divs	for editing	
+			$("#invite_faculty").show();
+			$("#invite_students").show();
+			$('#joinLink').html("HERE IS YOUR JOIN LINK! Copy and paste the following link,<br> " + joinlink + "<br> into an email to your student(s). Detailed instructions are below in the orange information box.");
+			$("#create_roster").show();
+			
+	}
+//don't do any document.ready unless it is the roster page, the roster listing page, or the roster faculty page
+if (current_page.indexOf('roster-students') > -1) {
+var baseURL = window.location.protocol+"//"+window.location.host;
+var urltoget=baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+$(".remove_student_from_roster").click( function() {
+var id_and_group= $(this).attr('id');
+//two values were added to the id, the group and the user id
+var id_group_vals=id_and_group.split('_');
+var id=id_group_vals[0];
+var group_id = id_group_vals[1];
+	$.post(urltoget, {'action':'remove_user_from_roster','id':id,'groupid':group_id}, function(ret){
+	alert("The user was successfully removed from the roster");
+	location.reload();
+	});
+});
+$(".showQiSurveyList").click( function() {
+var showItem=$(this).attr('id');
+var divToShow = '#surveyList_'+showItem;
+if($(divToShow).css('display') == 'none'){ 
+$(divToShow).show();
+}
+else{
+$(divToShow).hide();
+}
+});
+}
+else if (current_page.indexOf('roster-faculty') > -1) {
+var baseURL = window.location.protocol+"//"+window.location.host;
+var urltoget=baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+$(".remove_faculty").click( function() {
+var id_and_group= $(this).attr('id');
+//two values were added to the id, the group and the user id
+var id_group_vals=id_and_group.split('_');
+var faculty_id=id_group_vals[0];
+var group_id = id_group_vals[1];
+	$.post(urltoget, {'action':'remove_user_from_roster','id':faculty_id,'groupid':group_id}, function(ret){
+	alert("The user was successfully removed from the roster");
+	location.reload();
+	});
+});
+$(".promote_faculty_to_leader").click( function() {
+var id_and_group= $(this).attr('id');
+var id_group_vals=id_and_group.split('_');
+var faculty_id=id_group_vals[0];
+var group_id = id_group_vals[1];
+	$.post(urltoget, {'action':'promote_user_to_roster_leader','id':faculty_id,'groupid':group_id}, function(ret){
+	alert("The user was changed to a group leader");
+	location.reload();
+	});
+});
+}
+if (current_page.indexOf('roster-listing') > -1) {
+$(".confirmDeleteRoster").click( function() {
+ var groupid = $(this).attr('id');
+ if (groupid > 0){
+ //show the confirm message and set the hidden value on the form
+ $("#rostergroupid").val(groupid);
+ $("#rosterListDelete").show();
+}
+});
+//capture the delete roster form and use the id to delete it and everything associated with it.
+$("#deleteRosterForm" ).on( "submit", function( event ) {
+//var groupid = $("#rostergroupid").val();
+//$.post(urltoget, {'action':'delete_a_roster','groupid':groupid}, function(ret){
+//	$( "#rosterlistmessage" ).html("<p style='color:red;font-weight:bold;'>The roster was deleted.</p>");
+//});
+var pluginAjaxURL = baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+event.preventDefault();
+var data = $( this ).serialize();
+			$.ajax({
+			url: pluginAjaxURL,
+			type: 'POST',
+			dataType:'json',
+			data : data,
+			success: function(response){
+			},
+			error: function(xhr, textStatus, errorThrown){alert(textStatus);},
+			complete: function(response){
+			alert("The roster was removed.");
+			location.reload();
+			},
+		});
+});
+}
+else if (current_page.indexOf('pd-hub-roster') > -1) {
+var baseURL = window.location.protocol+"//"+window.location.host;
+var lookupURL=baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+
+//autocomplete is being handled on the site wide js in the theme, custom_tcscript.js and in autocompleteAjax.php
+//handle the create a roster form
+		 $( "#createrosterform" ).on( "submit", function( event ) {
+			//check for empty form values
+			if ($(".groupname").val() == "" ){
+			$( "#messagearearoster" ).html( "<p style='color:red;font-weight:bold;'>Please enter a group name.</p>" );
+			}
+			else if ($(".groupdescription").val() == "" ){
+			$( "#messagearearoster" ).html( "<p style='color:red;font-weight:bold;'>Please enter a short description for your group.</p>" );
+			}
+			else{
+			var baseURL = window.location.protocol+"//"+window.location.host;
+			var pluginAjaxURL = baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+			event.preventDefault();
+			var data = $( this ).serialize();
+			$.ajax({
+			url: pluginAjaxURL,
+			type: 'POST',
+			dataType:'json',
+			data : data,
+			success: function(response){
+			if (response['returnmsg']){
+			$( "#messagearearoster" ).html( "<h3 style='color:red; font-size: 14px;'>You selected a group name that is already in use. Please choose another</h3>" );
+			return false;
+			}
+			else if(response['groupid'] > 0 ){
+				var letters = ['a','b','c','d','e','f','g','h','i','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',0,1,2,3,4,5,6,7,8,9];
+				var randomstring = '';
+				   for(var i=0; i<5; i++){
+					 var rlet = Math.floor(Math.random()*letters.length);
+					 randomstring += letters[rlet];
+					}
+				var joinlink = baseURL+'/joinroster/?jn='+ response['groupid'] + '_' + randomstring;
+				var forumlink = baseURL+'/?p='+ response['forumid'];
+				$("#invite-faculty-message" ).html( "<h3 style='color:red; font-size: 14px;'>Lookup faculty who are registered on Transition Coalition and invite them to your roster.</h3>" );
+				$("#groupid").val(response['groupid']);
+				//set the group id on the email form
+				$(".rostergroupid").val(response['groupid']); 
+				$('#create-group-summary').html("<h3 style='color:red;font-size: 14px;'>Great! Your roster was created. If you plan to collaborate with other faculty, go to Step #2 to add faculty to your roster. If you want to invite students go to Step #3.</h3>");
+				//show the Invite div
+				$("#invite_faculty").show();
+				$("#invite_students").show();
+				$('#joinLink').html("YOUR JOIN LINK IS BELOW! Copy and paste it, into an email to your student(s).<br> Detailed instructions are below in the orange information box.<br> " + joinlink + "<br>");
+				//hide create roster
+				$("#create_roster").hide();
+			 }
+			 },
+			error: function(xhr, textStatus, errorThrown){alert(textStatus);},
+			complete: function(response){$( "#messagearearoster" ).html( "<p style='color:red;font-weight:bold;'>Great, your roster information has been saved!</p>" );},
+		 });
+        }
+    });
+//get the add faculty to roster form
+	$( "#addfacultytoroster" ).on( "submit", function( event ) {
+			var baseURL = window.location.protocol+"//"+window.location.host;
+			var pluginAjaxURL = baseURL +'/wp-content/plugins/user-groups-frontend/processGroupFrontendAjax.php';
+			event.preventDefault();
+			var data = $( this ).serialize();
+			$.ajax({
+			url: pluginAjaxURL,
+			type: 'POST',
+			dataType:'json',
+			data : data,
+				success: function(returndata){	
+				},
+				error: function(xhr, textStatus, errorThrown){alert(textStatus);},
+				complete: function(response){
+				$( "#messageareafaculty" ).html( "<p style='color:red;font-weight:bold;'>The faculty member was added to the roster and has been notified by email.</p>" );
+				alert("The user was added to the roster.");
+				},
+	       }); //end the ajax call
+		});//end add faculty to roster	
+}//end if we are on the pdhub page
+
+});//end document ready
