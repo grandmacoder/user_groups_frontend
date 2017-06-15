@@ -498,14 +498,12 @@ public function widget( $args, $instance ) {
 global $wpdb;
 $currentUser= wp_get_current_user();
 $currentUserID = $currentUser->ID;
-//$post = get_post();
-//$currentPostID = $post->ID;
-//$term_id_for_post =$wpdb->get_var("select term_id  from wp_term_taxonomy where parent > 0 and term_taxonomy_id in (select term_taxonomy_id from wp_term_relationships where object_id =" .$currentPostID .")");
 $theoutput="";
 $title = apply_filters( 'widget_title', $instance['title'] );
 $groupid =apply_filters( 'widget_groupid', $instance['groupid'] );
+$courseid =apply_filters( 'widget_courseid', $instance['courseid'] );
 echo $args['before_widget'];
-$theoutput=$this->get_students_roster_progress_links($currentUserID,$groupid);
+$theoutput=$this->get_students_roster_progress_links($currentUserID,$groupid, $courseid);
 if ($theoutput==""){
 $theoutput.="Currently you are not an facilitator on a roster.";	
 }
@@ -531,6 +529,12 @@ $groupid = $instance[ 'groupid' ];
 else {
 $groupid = __( 0, 'gfe_widget_domain' );
 }
+if ( isset( $instance[ 'courseid' ] ) ) {
+$courseid = $instance[ 'courseid' ];
+}
+else {
+$courseid = __( 0, 'gfe_widget_domain' );
+}
 // Widget admin form
 ?>
 <p>
@@ -538,12 +542,13 @@ $groupid = __( 0, 'gfe_widget_domain' );
 <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
 <label for="<?php echo $this->get_field_id( 'groupid' ); ?>"><?php _e( 'Facilitator Group ID:' ); ?></label> 
 <input class="widefat" id="<?php echo $this->get_field_id( 'groupid' ); ?>" name="<?php echo $this->get_field_name( 'groupid' ); ?>" type="text" value="<?php echo esc_attr( $groupid ); ?>" />
+<label for="<?php echo $this->get_field_id( 'courseid' ); ?>"><?php _e( 'Course ID:' ); ?></label> 
+<input class="widefat" id="<?php echo $this->get_field_id( 'courseid' ); ?>" name="<?php echo $this->get_field_name( 'courseid' ); ?>" type="text" value="<?php echo esc_attr( $courseid ); ?>" />
 </p>
 <?php 
 }
-
 //get the user's groups if they are in a facilitator group
-public function get_students_roster_progress_links($currentUserID,$parentID){
+public function get_students_roster_progress_links($currentUserID,$parentID, $courseid){
 global $wpdb;
 $group_links= "";
 //get the term_id  from term_relationships, term tax where term_order <> 0 and term_order <> 3 which means not a student and is assigned roster leader, roster instructor or both
@@ -561,7 +566,7 @@ order by object_id", OBJECT);
 foreach ($rows as $row){
 if ($row->object_id == $currentUserID){
 //create a link to that rosters module progress
-$group_links .="<a href='".get_site_url()."/student-progress/?id=". $row->term_id."'><strong>Roster: </strong>". $row->name."</a><br>";
+$group_links .="<a href='".get_site_url()."/self-study-progress/?id=". $row->term_id."&course_id=".$courseid."'><strong>Roster: </strong>". $row->name."</a><br>";
 }
 }
 return $group_links;
@@ -571,6 +576,7 @@ public function update( $new_instance, $old_instance ) {
 $instance = array();
 $instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
 $instance['groupid'] = ( ! empty( $new_instance['groupid'] ) ) ? strip_tags( $new_instance['groupid'] ) : '';
+$instance['courseid'] = ( ! empty( $new_instance['courseid'] ) ) ? strip_tags( $new_instance['courseid'] ) : '';
 return $instance;
 }
 } //Class gfe_roster widget ends here
