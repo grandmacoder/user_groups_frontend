@@ -547,7 +547,7 @@ $courseid = __( 0, 'gfe_widget_domain' );
 </p>
 <?php 
 }
-//get the user's groups if they are in a facilitator group
+//get a link for facilitors to view course progress open in a fancybox
 public function get_students_roster_progress_links($currentUserID,$parentID, $courseid){
 global $wpdb;
 $group_links= "";
@@ -566,7 +566,7 @@ order by object_id", OBJECT);
 foreach ($rows as $row){
 if ($row->object_id == $currentUserID){
 //create a link to that rosters module progress
-$group_links .="<a href='".get_site_url()."/self-study-progress/?id=". $row->term_id."&course_id=".$courseid."'><strong>Roster: </strong>". $row->name."</a><br>";
+$group_links .="<a class='fancybox-iframe' href='".get_site_url()."/self-study-progress/?id=". $row->term_id."&course_id=".$courseid."'><strong>Roster: </strong>". $row->name."</a><br>";
 }
 }
 return $group_links;
